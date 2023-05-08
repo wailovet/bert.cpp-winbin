@@ -14,3 +14,11 @@ __pycache__
 models/*/
 
 error_logs.txt
+
+*.obj
+*.exe
+*.bin
+
+*.lib
+*.exp
+

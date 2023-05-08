@@ -1,7 +1,7 @@
 #include "bert.h"
 #include "ggml.h"
-
-#include <unistd.h>
+ 
+ 
 #include <map>
 #include <stdio.h>
 #include <string>

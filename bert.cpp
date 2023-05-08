@@ -10,10 +10,10 @@
 #include <string>
 #include <vector>
 #include <iostream>
-#include <unistd.h>
 #include <regex>
 #include <thread>
 #include <algorithm>
+#include <unordered_map>
 
 // if using clang under macos, use unordered_map
 #if defined(__APPLE__)

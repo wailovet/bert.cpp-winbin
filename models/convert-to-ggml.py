@@ -22,8 +22,39 @@ with open(dir_model + "/tokenizer.json", "r", encoding="utf-8") as f:
 with open(dir_model + "/config.json", "r", encoding="utf-8") as f:
     hparams = json.load(f)
 
-with open(dir_model + "/vocab.txt", "r", encoding="utf-8") as f:
-    vocab = f.readlines()
+tokenizer = AutoTokenizer.from_pretrained(
+    dir_model,
+)
+
+
+#  Dict[str, int]
+
+vocabs = tokenizer.get_vocab()
+
+print(len(vocabs))
+print(hparams["vocab_size"])
+
+# with open(dir_model + "/vocab.txt", "r", encoding="utf-8") as f:
+#     vocab = f.readlines()
+
+vocab = []
+for i in range(hparams["vocab_size"]):
+    vocab.append("")
+
+for key in vocabs.keys():
+    vocab[vocabs[key]] = key
+
+with open(dir_model + "/vocab.txt", "w", encoding="utf-8") as f:
+    for i in range(hparams["vocab_size"]):
+        f.write(vocab[i] + "\n")
+
+for i in range(hparams["vocab_size"]):
+    if vocab[i] == "":
+        print("Missing vocab: " + str(i))
+
+
+print("aac:", tokenizer.encode('aac')) 
+# assert len(vocabs) == hparams["vocab_size"]
 # possible data types
 #   ftype == 0 -> float32
 #   ftype == 1 -> float16
@@ -40,9 +71,8 @@ if len(sys.argv) > 2:
     fname_out = sys.argv[1] + "/ggml-model-" + ftype_str[ftype] + ".bin"
 
 
-tokenizer = AutoTokenizer.from_pretrained(dir_model)
 model = AutoModel.from_pretrained(dir_model, low_cpu_mem_usage=True)
-print (model)
+print(model)
 
 print(tokenizer.encode('I believe the meaning of life is'))
 
@@ -54,7 +84,7 @@ fout = open(fname_out, "wb")
 
 print(hparams)
 
-fout.write(struct.pack("i", 0x67676d6c)) # magic: ggml in hex
+fout.write(struct.pack("i", 0x67676d6c))  # magic: ggml in hex
 fout.write(struct.pack("i", hparams["vocab_size"]))
 fout.write(struct.pack("i", hparams["max_position_embeddings"]))
 fout.write(struct.pack("i", hparams["hidden_size"]))
@@ -64,9 +94,8 @@ fout.write(struct.pack("i", hparams["num_hidden_layers"]))
 fout.write(struct.pack("i", ftype))
 
 for i in range(hparams["vocab_size"]):
-    text = vocab[i][:-1] # strips newline at the end
-    #print(f"{i}:{text}")
-    data = bytes(text, 'utf-8')
+    text = vocab[i][:-1]  # strips newline at the end 
+    data = bytes(text, 'utf-8') 
     fout.write(struct.pack("i", len(data)))
     fout.write(data)
 
@@ -76,13 +105,13 @@ for name in list_vars.keys():
         continue
     print("Processing variable: " + name + " with shape: ", data.shape)
 
-    n_dims = len(data.shape);
+    n_dims = len(data.shape)
 
     # ftype == 0 -> float32, ftype == 1 -> float16
     if ftype == 1 and name[-7:] == ".weight" and n_dims == 2:
-            print("  Converting to float16")
-            data = data.astype(np.float16)
-            l_type = 1
+        print("  Converting to float16")
+        data = data.astype(np.float16)
+        l_type = 1
     else:
         l_type = 0
 
@@ -91,7 +120,7 @@ for name in list_vars.keys():
     fout.write(struct.pack("iii", n_dims, len(str), l_type))
     for i in range(n_dims):
         fout.write(struct.pack("i", data.shape[n_dims - 1 - i]))
-    fout.write(str);
+    fout.write(str)
 
     # data
     data.tofile(fout)
