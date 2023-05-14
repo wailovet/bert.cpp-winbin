@@ -53,3 +53,7 @@ func (b *Bret) EncodeBatch(texts []string, nThreads int, nBatch int) [][]float32
 	ret := BertEvalBatch(b.ctx, nThreads, nBatch, ids, b.nEmbd)
 	return ret
 }
+
+func (b *Bret) EmbedSize() int {
+	return b.nEmbd
+}
